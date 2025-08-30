@@ -1,0 +1,26 @@
+Package: COINT
+Type: Package
+Title: Conduct Tests for Integration with Structural Breaks and Estimation for Fully-Modified Procedures
+Version: 0.0.1
+Date: 2025-08-26
+Authors@R: person(given = "Ho",
+                    family = "Tsung-wu",
+                    role = c("aut", "cre"),
+                    email = "tsungwu@ntnu.edu.tw")
+Author: Ho Tsung-wu [aut, cre]
+Maintainer: Ho Tsung-wu <tsungwu@ntnu.edu.tw>
+Description: A collection of procedures for integration with structural breaks and fully-modified cointegrating equation.
+Encoding: UTF-8
+License: GPL (>= 2)
+LazyData: TRUE
+LazyLoad: yes
+Depends:
+    R (>= 3.5)
+Imports:
+    timeSeries
+Suggests:
+    cointReg,
+    forecast,
+    timeDate,
+    urca,
+    zoo
