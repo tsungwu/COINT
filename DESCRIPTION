@@ -1,15 +1,15 @@
 Package: COINT
 Type: Package
-Title: Conduct Tests for Integration with Structural Breaks and Estimation for Fully-Modified Procedures
+Title: Unit Root Tests with Structural Breaks and Fully-Modified Cointegrating Procedures
 Version: 0.0.1
-Date: 2025-08-26
+Date: 2025-09-02
 Authors@R: person(given = "Ho",
                     family = "Tsung-wu",
                     role = c("aut", "cre"),
                     email = "tsungwu@ntnu.edu.tw")
 Author: Ho Tsung-wu [aut, cre]
 Maintainer: Ho Tsung-wu <tsungwu@ntnu.edu.tw>
-Description: A collection of procedures for integration with structural breaks and fully-modified cointegrating equation.
+Description: Procedures include Phillips' (1995) FMVAR <https://doi.org/10.2307/2171721>,  Kitamura and Phillips' (1997) FMGMM <https://doi.org/10.1016/S0304-4076(97)00004-3>, and Park's (1992) CCR <https://doi.org/10.2307/2951679>, and so on. Tests with 1 or 2 structural breaks include Gregory and Hansen (1996) <https://doi.org/10.1016/0304-4076(69)41685-7>, Zivot and Andrews (1992) <https://doi.org/10.2307/1391541>, and Kurozumi (2002) <https://doi.org/10.1016/S0304-4076(01)00106-3>.
 Encoding: UTF-8
 License: GPL (>= 2)
 LazyData: TRUE
