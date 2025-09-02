@@ -21,7 +21,7 @@ tukham(data,v)
 }
 
 
-\details{
+\value{
 Brillinger, David R. (1981) \emph{Time Series Data Analysis and Theory}. San Francisco, CA: Holden-Day.
 }
 

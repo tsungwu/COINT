@@ -17,7 +17,7 @@
 }
 
 
-\details{
+\value{
 Return the consistent estimate of long-run variance, Bartlett kernel proposed by Kurozumi (2002).
 }
 

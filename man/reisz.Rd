@@ -18,7 +18,7 @@
 }
 
 
-\details{
+\value{
 Return the consistent estimate of long-run variance. This procedure handles both multivariate and single time series, which is basically designed for "fmvar","fmgmm" and "fmols".
 }
 

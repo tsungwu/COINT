@@ -19,11 +19,13 @@
 }
 
 
-\details{
+\value{
 
   Return the consistent estimate of long-run variance, that PP and KPSS tests require. This procedure handles single time series only.
 
 }
+
+
 
 \references{
 

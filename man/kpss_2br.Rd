@@ -64,12 +64,16 @@ Kurozumi, E. (2002) Testing for stationarity with a break. \emph{Journal of Econ
 \examples{
 
 data(macro)
-y=macro[,"INF"]
-# It takes time
-#KPSS2=kpss_2br(y,model=c("intercept","both")[2],use=c("nw","ba"))
-#KPSS2$teststat
-#KPSS2cval
-#y[KPSS2$bpoint,]
+
+\donttest{
+y=macro[1:200,"INF"]
+
+KPSS2=kpss_2br(y,model=1,use=c("nw","ba"))
+KPSS2$teststat
+KPSS2$cval
+y[KPSS2$bpoint,]
+}
+
 
 }
 

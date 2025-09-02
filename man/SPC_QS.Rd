@@ -21,10 +21,8 @@ SPC_QS(e,v)
 }
 
 
-\details{
-
-  Return the consistent estimate of long-run variance.
-
+\value{
+Return the consistent estimate of long-run variance.
 }
 
 \references{

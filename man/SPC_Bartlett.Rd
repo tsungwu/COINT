@@ -21,10 +21,8 @@ SPC_Bartlett(e,v)
 }
 
 
-\details{
-
-  Return the consistent estimate of long-run variance, Bartlett kernel proposed by Sul, Phillips and Choi (2003) .
-
+\value{
+Return the consistent estimate of long-run variance, Bartlett kernel proposed by Sul, Phillips and Choi (2003) .
 }
 
 \references{

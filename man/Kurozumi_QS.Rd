@@ -19,7 +19,7 @@ Kurozumi_QS(e)
 }
 
 
-\details{
+\value{
 Return the consistent estimate of long-run variance, Quadratic Spectral kernel proposed by Kurozumi (2002).
 }
 

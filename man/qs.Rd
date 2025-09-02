@@ -19,7 +19,7 @@
 }
 
 
-\details{
+\value{
 Return the consistent estimate of long-run variance. This procedure handles both multivariate and single time series, which is basically designed for "fmvar","fmgmm" and "fmols".
 }
 
@@ -32,7 +32,9 @@ Brillinger, David R. (1981) \emph{Time Series Data Analysis and Theory}. San Fra
 \examples{
 data(macro)
 e=apply(macro, 2, function(x) x-mean(x))
+
 qs(e,v=15)
+
 }
 
 \author{
