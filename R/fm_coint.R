@@ -49,12 +49,12 @@ ccr<-function(y,
   }
   ## Deterministic parts for yn and xn
 
-  data=.Dummies4FM(data=xn,type)$z
+  X=.Dummies4FM(data=xn,type)$z
 
-  beta   =   solve(t(data)%*%data)%*%t(data)%*%yn
+  beta   =   solve(t(X)%*%X)%*%t(X)%*%yn
 
-  fit=data%*%beta
-  resid  =   y[-1,,drop=F] - data%*%beta
+  fit=X%*%beta
+  resid  =   y[-1,,drop=F] - fit
   colnames(resid)=colnames(fit)=colnames(y)
 
   rownames(resid)=rownames(y)[-1]
@@ -65,7 +65,7 @@ ccr<-function(y,
 
   sigma2  =   sig[1:n,1:n] - t(sig[(n+1):(m+n),1:n])%*%true_vec
   if(ncol(sigma2)==1 & nrow(sigma2)==1) {sigma2=as.numeric(sigma2)}
-  vcov   =   sigma2 * solve(t(data)%*%data)
+  vcov   =   sigma2 * solve(t(X)%*%X)
   stderr=sqrt(diag(vcov))
   colnames(resid)=paste0("u_",colnames(y))
   tstat=as.matrix(beta/stderr)
@@ -138,12 +138,12 @@ ccrQ<-function(y,
 
 
   ## Deterministic parts for xn and yn
-  data=.Dummies4FMQ(data=xn,type,q)$z
+  X=.Dummies4FMQ(data=xn,type,q)$z
 
-  beta   =   solve(t(data)%*%data)%*%t(data)%*%yn
+  beta   =   solve(t(X)%*%X)%*%t(X)%*%yn
 
-  fit=data%*%beta
-  resid  =   y[-1,,drop=F] - data%*%beta
+  fit=X%*%beta
+  resid  =   y[-1,,drop=F] - fit
   colnames(resid)=colnames(fit)=colnames(y)
 
     rownames(resid)=rownames(y)[-1]
@@ -153,7 +153,7 @@ ccrQ<-function(y,
 
   sigma2  =   sig[1:n,1:n] - t(sig[(n+1):(m+n),1:n])%*%true_vec
   if(ncol(sigma2)==1 & nrow(sigma2)==1) {sigma2=as.numeric(sigma2)}
-  vcov   =   sigma2 * solve(t(data)%*%data)
+  vcov   =   sigma2 * solve(t(X)%*%X)
 
   stderr=as.matrix(sqrt(diag(vcov)))
   tstat=beta/stderr
@@ -907,7 +907,7 @@ fmvar_forecast<-function(output,
     if (output$type %in% c("season","all")) {
 
       newdata=ts(newdata,start=start(as.ts(output$data)),
-                 freq=frequency(as.ts(output$data)))
+                 frequency=frequency(as.ts(output$data)))
       newdata=timeSeries::as.timeSeries(newdata) }
 
     fcst=rbind(fcst,ypred)

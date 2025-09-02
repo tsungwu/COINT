@@ -693,7 +693,7 @@ ZA_2br <- function(y,
 
     roll1 <- function(z) { #
 
-      if(isTRUE(trace)) {print(T2-z+1)}
+      if(isTRUE(trace)) {(T2-z+1)}
 
       du1 = c(rep(0,z),rep(1,t-z)) #tb1
 
@@ -751,7 +751,7 @@ t0=proc.time();rollStat <- sapply(idx1, roll1); t1=proc.time()
 
     roll1 <- function(z) { #z=68
 
-      if(isTRUE(trace)) {print(T2-z+1)}
+      if(isTRUE(trace)) {(T2-z+1)}
 
       du1 = c(rep(0,z),rep(1,t-z))
       dt1 = c(rep(0,z),seq(t-z))/t
@@ -1121,7 +1121,7 @@ GHansen <- function(y,x,model=1,trim=0.1, use=c("nw","ba")) {
     statistic=rbind(adf_t,pp_zt,pp_za)
     rownames(statistic)=c("ADF_t","PP_Zt","PP_Za")
     colnames(statistic)="statistics"
-  } else {print("Gregory-Hansen test critical values unavailable for k>4")}
+  } else {message("Gregory-Hansen test critical values unavailable for k>4")}
 
   rownames(roll.stat)=rownames(y)[idx]
 
@@ -1238,7 +1238,7 @@ kpss_2br <-function (y,
 
     roll1 <- function(z) { #z=680
 
-      if(isTRUE(trace)) {print(t-z-3)}
+      if(isTRUE(trace)) {(t-z-3)}
 
       du1 = c(rep(0,z),rep(1,t-z)) #tb1
 
@@ -1262,7 +1262,7 @@ kpss_2br <-function (y,
 
     roll1 <- function(z) { #tb1 loop
 
-      if(isTRUE(trace)) {print(t-z-3)}
+      if(isTRUE(trace)) {t-z-3}
 
       du1 = c(rep(0,z),rep(1,t-z))
 
@@ -1284,7 +1284,7 @@ kpss_2br <-function (y,
 
     roll1 <- function(z) { #tb1 loop
 
-      if(isTRUE(trace)) {print(t-z-3)}
+      if(isTRUE(trace)) {t-z-3}
 
       dt1 = c(rep(0,z),seq(t-z))/t
 
@@ -1305,7 +1305,7 @@ kpss_2br <-function (y,
 
     roll1 <- function(z) { #tb1 loop
 
-      if(isTRUE(trace)) {print(t-z-3)}
+      if(isTRUE(trace)) {(t-z-3)}
 
       du1 = c(rep(0,z),rep(1,t-z))
       dt1 = c(rep(0,z),seq(t-z))/t
@@ -1844,7 +1844,7 @@ Kurozumi_QS <-function(e) {
   t0=proc.time();rollStat=matrix(rep(0,length(idx1)*length(idx2)),length(idx2),length(idx1));
   for (tb1 in idx1) { #tb1=68
 
-    if(isTRUE(trace)) {print(T2-tb1+1)}
+    if(isTRUE(trace)) {(T2-tb1+1)}
 
     du1 = c(rep(0,tb1),rep(1,t-tb1)) #tb1
 
@@ -2180,7 +2180,7 @@ Kurozumi_QS <-function(e) {
         opt_lag = p-1
       }
 
-      print(paste0("tb1=",tb1,"/",T2,"; tb2=",tb2))
+      message(paste0("tb1=",tb1,"/",T2,"; tb2=",tb2))
     } # end of tb2 loop
 
 

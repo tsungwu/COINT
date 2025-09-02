@@ -108,7 +108,7 @@ Za<-function(y,p=1,v=15,ker_fun="parzen",aband=0,filter=0) {
   #p=order of the time polynomial in the fitted regression, must be -1,0,1,....
   y=as.matrix(y)
 
-  if (p < -1) {stop(print("\nError: p < -1 is not allowed."))}
+  if (p < -1) {stop("\nError: p < -1 is not allowed.")}
 
   if (ncol(y) > 1){stop("\nError: ZA cannot handle a data matrix.")}
 
