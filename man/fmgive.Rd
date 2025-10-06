@@ -1,16 +1,16 @@
-\name{fmgmm}
-\alias{fmgmm}
+\name{fmgive}
+\alias{fmgive}
 
 \encoding{latin1}
 
-\title{Fully-Modified GMM Estimator}
+\title{Fully-Modified GIVE Estimator}
 
 \description{
 
-Computes the Kitamura-Phillips (1997) Fully-Modified GMM estimator for univariate and multivariate cointegrated regression models.
+Computes the Kitamura-Phillips (1997) Fully-Modified GIVE estimator for univariate and multivariate cointegrated regression models.
   }
 
-\usage{fmgmm(y,x,z,v,ker_fun="parzen",times=5) }
+\usage{fmgive(y,x,z,v,t,ker_fun="parzen",times=5) }
 
 \arguments{
   \item{y}{The data of dependent variable(s) in a regression.}
@@ -20,9 +20,12 @@ Computes the Kitamura-Phillips (1997) Fully-Modified GMM estimator for univariat
 
   \item{v}{Number of autocovariance terms to compute the spectrum at frequency zero, default=15.}
 
+  \item{t}{number of terms to use in the computation of the WT matrix.}
+
+
   \item{ker_fun}{Set kernel function to one of the available kernels, default="parzen". See section \code{details} below.}
 
-  \item{times}{Number of iteration to compute GMM residuals, default =5.}
+  \item{times}{Number of iteration to compute GIVE residuals, default =5.}
 
 }
 
@@ -73,10 +76,10 @@ Kitamura, Y. and P. C. B. Phillips (1997) Fully-Modified IV, GIVE and GMM Estima
 data(macro)
 
 y=macro[-1,c(1)]
-x=macro[-1,c(2,3)]
+x=macro[-1,c(2,4)]
 z=as.matrix(na.omit(exp(diff(macro)))) #IV
 
-out=fmgmm(y,x,z,v=15,ker_fun="parzen")
+out=fmgive(y,x,z,v=15,t=5,ker_fun="parzen")
 out$beta
 out$vcov
 out$stderr
@@ -84,7 +87,12 @@ out$tstat #t-ratio
 tail(out$fit)
 tail(out$resid)
 
+y=macro[-1,c(1,3)]
+x=macro[-1,c(2,4)]
+z=as.matrix(na.omit(exp(diff(macro)))) #IV
 
+out=fmgive(y,x,z,v=15,t=5,ker_fun="parzen")
+out$beta
 }
 
 \author{

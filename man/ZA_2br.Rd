@@ -110,7 +110,9 @@ Zivot,E. and Andrews, W.K. (1992),Further Evidence on the Great Crasch, the Oil-
 
 \examples{
 data(macro) # US macro data, 1967M1-2025M7
+
 # It takes time
+
 \donttest{
 y=macro[1:200,"INF"]
 za2=ZA_2br(y,
@@ -120,13 +122,14 @@ za2=ZA_2br(y,
            model=c("intercept","trend","both")[1],
            trim=0.1,
            eq=1,
-           season=TRUE)
+           season=FALSE)
 za2$timeElapse[3]/60
 za2$teststat
 za2$cval
 y[za2$bpoint1,] #The first dated strictural change
 y[za2$bpoint2,] #The second dated strictural change
 }
+
 }
 
 \author{

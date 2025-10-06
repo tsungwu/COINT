@@ -17,7 +17,9 @@
 
 
 \value{
-Return the consistent estimate of long-run variance. This procedure handles both multivariate and single time series, which is basically designed for "fmvar","fmgmm" and "fmols".
+
+  \item{amat}{Return the consistent estimate of long-run variance. This procedure handles both multivariate and single time series, which is basically designed for "fmvar","fmgmm" and "fmols".}
+  \item{weights}{The weights vector, used by function \code{fmgive}}
 }
 
 \references{

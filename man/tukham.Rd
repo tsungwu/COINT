@@ -22,7 +22,9 @@ tukham(data,v)
 
 
 \value{
-Brillinger, David R. (1981) \emph{Time Series Data Analysis and Theory}. San Francisco, CA: Holden-Day.
+
+  \item{amat}{Return the consistent estimate of long-run variance. This procedure handles both multivariate and single time series, which is basically designed for "fmvar","fmgmm" and "fmols".}
+  \item{weights}{The weights vector, used by function \code{fmgive}}
 }
 
 \references{
