@@ -21,7 +21,7 @@ bartlett <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 #Computes the Parzen window, Brillinger (1981, p.55)
@@ -51,7 +51,7 @@ parzen <-function(data,v){
     }
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 #Procedure to compute the Tukey-Hanning window, Brillinger (1981, p.55)
@@ -72,7 +72,7 @@ tukhan <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 
@@ -93,7 +93,7 @@ tukham <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 
@@ -115,7 +115,7 @@ cauchy <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 #Computes the Andrews (1991) Quadratic-Spectral window
@@ -145,7 +145,7 @@ qs <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 #Computes the Gauss-Weierstrass window, Brillinger (1981, p.55)
@@ -166,7 +166,7 @@ gw <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 
@@ -187,7 +187,7 @@ dchlet <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 #Computes the modified Dirichlet window, Brillinger (1981, p.55)
@@ -207,7 +207,7 @@ mdchlet <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 #Computes the Reisz window, Brillinger (1981, p.55)
@@ -228,7 +228,7 @@ reisz <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
 
 #Computes the Bohman window, Brillinger (1981, p.55)
@@ -249,8 +249,9 @@ bohman <- function(data,v) {
 
   }
   colnames(A)=rownames(A)=colnames(e)
-  return(A/nrow(e))
+  return(list(amat=A/nrow(e),weights=weights))
 }
+
 
 
 

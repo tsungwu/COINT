@@ -49,12 +49,12 @@ ccr<-function(y,
   }
   ## Deterministic parts for yn and xn
 
-  X=.Dummies4FM(data=xn,type)$z
+  data=.Dummies4FM(data=xn,type)$z
 
-  beta   =   solve(t(X)%*%X)%*%t(X)%*%yn
+  beta   =   solve(t(data)%*%data)%*%t(data)%*%yn
 
-  fit=X%*%beta
-  resid  =   y[-1,,drop=F] - fit
+  fit=data%*%beta
+  resid  =   y[-1,,drop=F] - data%*%beta
   colnames(resid)=colnames(fit)=colnames(y)
 
   rownames(resid)=rownames(y)[-1]
@@ -65,7 +65,7 @@ ccr<-function(y,
 
   sigma2  =   sig[1:n,1:n] - t(sig[(n+1):(m+n),1:n])%*%true_vec
   if(ncol(sigma2)==1 & nrow(sigma2)==1) {sigma2=as.numeric(sigma2)}
-  vcov   =   sigma2 * solve(t(X)%*%X)
+  vcov   =   sigma2 * solve(t(data)%*%data)
   stderr=sqrt(diag(vcov))
   colnames(resid)=paste0("u_",colnames(y))
   tstat=as.matrix(beta/stderr)
@@ -138,12 +138,12 @@ ccrQ<-function(y,
 
 
   ## Deterministic parts for xn and yn
-  X=.Dummies4FMQ(data=xn,type,q)$z
+  data=.Dummies4FMQ(data=xn,type,q)$z
 
-  beta   =   solve(t(X)%*%X)%*%t(X)%*%yn
+  beta   =   solve(t(data)%*%data)%*%t(data)%*%yn
 
-  fit=X%*%beta
-  resid  =   y[-1,,drop=F] - fit
+  fit=data%*%beta
+  resid  =   y[-1,,drop=F] - data%*%beta
   colnames(resid)=colnames(fit)=colnames(y)
 
     rownames(resid)=rownames(y)[-1]
@@ -153,7 +153,7 @@ ccrQ<-function(y,
 
   sigma2  =   sig[1:n,1:n] - t(sig[(n+1):(m+n),1:n])%*%true_vec
   if(ncol(sigma2)==1 & nrow(sigma2)==1) {sigma2=as.numeric(sigma2)}
-  vcov   =   sigma2 * solve(t(X)%*%X)
+  vcov   =   sigma2 * solve(t(data)%*%data)
 
   stderr=as.matrix(sqrt(diag(vcov)))
   tstat=beta/stderr
@@ -515,19 +515,20 @@ fmols <-function(y,
 
 ###======= Estimating Fully-Modified GMM
 fmgmm<-function(y,
-                 x,
-                 z,
-                 v=15,
-                 ker_fun="parzen",
-                 aband=0,
-                 times=5){
+                x,
+                z,
+                v=15,
+                ker_fun="parzen",
+                times=5){
   y0=y
   x0=x
   y=as.matrix(y)
   x=as.matrix(x)
+  z=as.matrix(z)
   n = ncol(y)
   m = ncol(x)
   nz = ncol(z)
+  colnames(z)=paste0("IV",seq(nz))
 
   if (times < 0) {times = 1}
 
@@ -542,7 +543,7 @@ fmgmm<-function(y,
   #   Construct observation matrix of (u times z)
 
   tmp = (uhat0 %x% t(as.matrix(rep(1,ncol(z))))) * (t(as.matrix(rep(1,ncol(uhat0)))) %x% z)
-  sigmal = match.fun(ker_fun)(tmp,v);
+  sigmal = match.fun(ker_fun)(tmp,v)$amat;
   sztl   = ((t(tmp)%*%tmp)/nrow(tmp)) + sigmal + t(sigmal)
 
   #   Compute GMM estimator  (Step 2)
@@ -559,48 +560,55 @@ fmgmm<-function(y,
   #   Compute the GMM residuals
 
   uhat0gmm = y - x%*%t(ahatgmm)
-  tail(uhat0gmm)
 
-  for (i in seq(times)) {
+  for (i in seq(times)) {#i=1
 
     #Recompute sztl using GMM residuals
 
     tmp = (uhat0gmm %x% t(as.matrix(rep(1,ncol(z))))) * (t(as.matrix(rep(1,ncol(uhat0gmm)))) %x% z)
-    sigmal = match.fun(ker_fun)(tmp,v);
+    sigmal = match.fun(ker_fun)(tmp,v)$amat;
     sztl   = ((t(tmp)%*%tmp)/nrow(tmp)) + sigmal + t(sigmal)
 
     # Compute Omega and .Delta matrices
-    rsd=uhat0gmm[-1,]
+    rsd=uhat0gmm[-1,,drop=F]
     tmp1 = cbind(rsd,diff(x),diff(z))
-    tmp2 = match.fun(ker_fun)(tmp1,v)
+    tmp2 = match.fun(ker_fun)(tmp1,v)$amat
 
     del   = (t(tmp1)%*%tmp1)/nrow(tmp1) + tmp2
     omg = del + t(tmp2)
 
     # Extract the required matrices
-
-    omega0a = t(t(omg[-((nrow(omg)-(m+nz)+1):nrow(omg)),])[-seq(n),])
+    if (n==1) {
+    A=t(as.matrix((omg[seq(n),])))
+    omega0a = t(as.matrix(A[,-seq(n)]))
     omegaaa = t(t(omg[-seq(n),])[-seq(n),])
     colnames(omegaaa)=rownames(omegaaa)=NULL
+    } else {
 
+      A=t(as.matrix((omg[seq(n),])))
+      omega0a = t(A[-seq(n),])
+      omegaaa = t(t(omg[-seq(n),])[-seq(n),])
+      colnames(omegaaa)=rownames(omegaaa)=NULL
+
+    }
 
     del0z   = del[1:n,(1+n+m):(m+n+nz)]
-    deluz   =  t(t(del[-seq(n),])[-seq(n+n),])
-    delp0z  = del0z - (omega0a%*% solve(omegaaa,tol=.Machine$double.eps^2) %*%deluz)
+    deluz   =  t(t(del[-seq(n),])[-seq(n+m),])
+    delp0z  = del0z - (omega0a %*% solve(omegaaa) %*%deluz)
 
-    yplus = y[-1,,drop=F] - (diff(cbind(x,z),1) %*% t(omega0a %*% solve(omegaaa,tol=.Machine$double.eps^2)))
+    yplus = y[-1,,drop=F] - (diff(cbind(x,z),1) %*% t(omega0a %*% solve(omegaaa)))
     yt   = y[-1,,drop=F]
     zt   = z[-1,,drop=F]
     xt   = x[-1,,drop=F]
 
     #  Compute the estimator ...
 
-    tmp    = (diag(1,n,n) %x% (t(xt)%*%zt))%*% solve(sztl)
+    tmp    = (diag(n) %x% (t(xt)%*%zt))%*% solve(sztl)
     G=t(yplus)%*%zt-(nrow(y)*delp0z)
     vecagmm = solve(tmp%*%(diag(1,n,n)%x%(t(zt)%*%xt)))%*% tmp %*% as.matrix(as.numeric(t(G)))
 
     ahatgmm = matrix(vecagmm,n, m, byrow=T)
-    vcov = solve(tmp%*%(diag(1,n,n) %x% (t(zt) %*% xt))) # Variance covariance matrix ; 2005/04/12 */
+    vcov = solve(tmp%*%(diag(n) %x% (t(zt) %*% xt))) # Variance covariance matrix ; 2005/04/12 */
 
     # Recompute the residuals
 
@@ -608,33 +616,44 @@ fmgmm<-function(y,
 
   }  # End of iteration loop --- Times
 
-#===== End of FM-GMM estimation
+  #===== End of FM-GMM estimation
 
 
-#===== IV validity test
+  #===== IV validity test
 
   #  Step 4:
 
   # Recompute Sztl
 
   # Construct observation matrix of (u times z)  */
-
+  uhat0gmm=as.matrix(uhat0gmm)
   tmp = (uhat0gmm %x% t(as.matrix(rep(1,ncol(z)))) ) * (t(as.matrix(rep(1,ncol(uhat0gmm)))) %x% z)
-  sigmal = match.fun(ker_fun)(tmp,v);
+  sigmal = match.fun(ker_fun)(tmp,v)$amat;
   sztl    = ((t(tmp)%*%tmp)/nrow(tmp)) + sigmal + t(sigmal)
 
 
   # Recompute Omega and .Delta matrices */ /*tmp*/
   rsd=uhat0gmm[-1,,drop=F]
   tmp1 = cbind(rsd,diff(x),diff(z))
-  tmp2 = match.fun(ker_fun)(tmp1,v)
+  tmp2 = match.fun(ker_fun)(tmp1,v)$amat
 
   del = (t(tmp1) %*% tmp1)/nrow(tmp1) + tmp2
   omg = del + t(tmp2)
 
-  omega0a = t(t(omg[-((nrow(omg)-(m+nz)+1):nrow(omg)),])[-seq(n),])
-  omegaaa = t(t(omg[-seq(n),])[-seq(n),])
-  colnames(omegaaa)=rownames(omegaaa)=NULL
+  if (n==1) {
+    #A=t(omg[-((nrow(omg)-(m+nz)+1):nrow(omg)),])
+    A=t(as.matrix((omg[seq(n),])))
+    omega0a = t(as.matrix(A[,-seq(n)]))
+    omegaaa = t(t(omg[-seq(n),])[-seq(n),])
+    colnames(omegaaa)=rownames(omegaaa)=NULL
+  } else {
+
+    A=t(as.matrix((omg[seq(n),])))
+    omega0a = t(A[-seq(n),])
+    omegaaa = t(t(omg[-seq(n),])[-seq(n),])
+    colnames(omegaaa)=rownames(omegaaa)=NULL
+
+  }
 
   # Note: omegaaa will be singular if z = x (i.e. instruments are the x)
   # So don't compute next part if this is just happens to be the case.
@@ -647,26 +666,27 @@ fmgmm<-function(y,
 
   if (det(omegaaa) != 0 & dof > 0) {
 
-    uhat0gmm = uhat0gmm[-1,];
-    tempz = t(omega0a %*% solve(omegaaa,tol=.Machine$double.eps^2))
+    uhat0gmm = uhat0gmm[-1,,drop=F]
 
-    uhatgmmp = uhat0gmm - (diff(cbind(x,z))%*% tempz)
+    tempz = t(omega0a %*% solve(omegaaa))
+
+    uhatgmmp = uhat0gmm - diff(cbind(x,z))%*% tempz
 
     #Compute long-run covariance matrix of the GMM residuals */
 
-    tmp2     = match.fun(ker_fun)(uhatgmmp,v) ;
+    tmp2     = match.fun(ker_fun)(uhatgmmp,v)$amat;
     lromega  = t(uhatgmmp)%*%uhatgmmp/nrow(uhatgmmp) + tmp2 + t(tmp2)
 
     # Step 5: Long-run scores... */
 
     del0z   = del[1:n,(1+n+m):(m+n+nz)]
-    deluz   =  t(t(del[-seq(n),])[-seq(n+n),])
-    delp0z  = del0z - (omega0a%*% solve(omegaaa,tol=.Machine$double.eps^2) %*%deluz)
+    deluz   =  t(t(del[-seq(n),])[-seq(n+m),])
+    delp0z  = del0z - (omega0a %*% solve(omegaaa) %*% deluz)
 
     # Construct obs matrix of (u times z)  :by Y.K. */
 
     tmp = (uhat0gmm %x% t(as.matrix(rep(1,ncol(zt)))) ) * (t(as.matrix(rep(1,ncol(uhat0gmm)))) %x% zt)
-    sigmal = match.fun(ker_fun)(tmp,v);
+    sigmal = match.fun(ker_fun)(tmp,v)$amat;
     sztl    = ((t(tmp)%*%tmp)/nrow(tmp)) + sigmal + t(sigmal)
 
     lrscores = t(uhatgmmp)%*% zt - (nrow(y)*delp0z)
@@ -680,10 +700,11 @@ fmgmm<-function(y,
     pvalue = dchisq(st,df=dof) *2
 
   }
+  ahatgmm=t(ahatgmm)
   rownames(ahatgmm)=colnames(x)
   colnames(ahatgmm)=colnames(y)
 
-  fitted=x %*% t(ahatgmm)
+  fitted=x %*% ahatgmm
   colnames(fitted)=colnames(y)
 
   if(is.ts(y0)) {fitted=ts(fitted,end=end(y0),frequency=frequency(y0))
@@ -696,7 +717,7 @@ fmgmm<-function(y,
   stderr=matrix(sqrt(diag(vcov)),nrow(ahatgmm), ncol(ahatgmm))
   tstats=ahatgmm/stderr
   rownames(stderr)=rownames(ahatgmm)=rownames(tstats)=colnames(x)
-  colnames(stderr)=colnames(ahatgmm)=colnames(y)
+  colnames(stderr)=colnames(ahatgmm)=colnames(tstats)=colnames(y)
   colnames(vcov)=rownames(vcov)=c(t(outer(colnames(tstats),rownames(tstats),FUN = paste,sep="_")))
 
   return(list(beta=ahatgmm,
@@ -711,6 +732,281 @@ fmgmm<-function(y,
               resid=uhat0gmm))
 
 }
+
+
+fmgive <- function(y,x,z,v,t,ker_fun="parzen",times=5) {
+  y0=y
+  x0=x
+  y=as.matrix(y)
+  x=as.matrix(x)
+  z=as.matrix(z)
+  colnames(z)=paste0("IV_",colnames(z))
+  n = ncol(y)
+  m = ncol(x)
+  nz = ncol(z)
+
+  if (times <= 0) { times = 1 }
+
+  # naive instrumental variable estimation */
+
+  ahatx = (t(y)%*%z)%*%solve(t(z)%*%z)%*%(t(z)%*%x)%*%solve(t(x)%*%z%*%solve(t(z)%*%z)%*%(t(z)%*%x))
+  u=y-x%*%t(ahatx)
+  what_t = .wt(u, t)
+
+  # now transform the X, Y, Z matrices using the weight matrix, what_t */
+
+
+  xstar = what_t%*%(diag(n) %x% x)
+  zstar = what_t%*%(diag(n) %x% z)
+
+
+  vecystr = what_t%*% as.matrix(c(y))
+
+  # compute GIVE */
+
+  vecagive = solve((t(xstar)%*%zstar)%*%solve(t(zstar)%*%zstar)%*%(t(zstar)%*%xstar))%*%(t(xstar)%*%zstar)%*%(solve(t(zstar)%*%zstar)%*%(t(zstar)%*%vecystr))
+
+  agive = matrix(vecagive,n,m,byrow = TRUE)
+
+  uhatgive = y - x%*%t(agive)
+
+  # uhatgivn is the UM(unmodified)-GIVE residual (may be used in tests) */
+  uhatgivn = uhatgive
+
+  # set up a loop to compute the FM-GIVE estimator and then iterate */
+
+  # Iteration begins
+  for (iters in seq(times)) {
+
+    # re-calculate GLS-transformation matrix  */
+
+    what_t = .wt(uhatgive,t)
+
+    # now transform the X, Y, Z matrices using the weight matrix, what_t*/
+
+      xstar = what_t%*%(diag(n) %x% x)
+      zstar = what_t%*%(diag(n) %x% z)
+
+
+    vecystr = what_t%*%as.matrix(c(y))
+
+    #        iters = iters + 1
+
+    # compute Omega and Delta matrices */
+    rsd=uhatgive[-1,]
+    tmp1 = cbind(rsd,na.omit(diff(cbind(x,z))))
+    tmp2 = match.fun(ker_fun)(tmp1,v)$amat
+
+    del   = t(tmp1)%*%tmp1/nrow(tmp1) + tmp2
+    omega = del + t(tmp2)
+
+#    trimr(trimr(omegaX, 0, m + nz)',n,nz)'
+
+    # extract the required matrices ... */
+    omega1a=t(omega[-c((nrow(omega)-m-nz+1):nrow(omega)),,drop=F])
+    omega0ux=t(omega1a[-c(seq(n),(nrow(omega)-nz+1):nrow(omega)),,drop=F])
+
+    omega2a=t(omega[-c(seq(n),(nrow(omega)-nz+1):nrow(omega)),,drop=F])
+    omega0xx=t(omega2a[-c(seq(n),(nrow(omega2a)-nz+1):nrow(omega2a)),,drop=F])
+
+
+
+    del1=t(del[-c(seq(n),(nrow(del)-nz+1):nrow(del)),,drop=F])
+    deluxz   = t(del1[-seq(n+m),,drop=F])
+
+    #  Compute the FM-GIVE estimator ... */
+
+    zt = z[-1,]
+    tmp = solve(omega0xx)%*%((t(na.omit(diff(x)))%*%zt)-(nrow(zt)*deluxz))%*%solve(t(zt)%*%zt)
+    tmp = (omega0ux %*% tmp)
+    A=solve(t(xstar)%*%zstar %*% solve(t(zstar)%*%zstar)%*% t(zstar)%*%xstar)
+    B=t(xstar)%*%zstar
+    C=solve(t(zstar)%*%zstar) %*% t(zstar)%*% vecystr-as.matrix(c(t(tmp)))
+
+    vecagive = A  %*% B %*% C
+
+    agive = matrix(vecagive,n,m,byrow=TRUE)
+
+    uhatgive = y - x%*%t(agive)
+
+  }   # End of iteration loop --- _Times */
+
+  #***************************************************************/
+  #          End of FM-GIVE estimation   &                       */
+  #          Beginning of IV validity test procedure             */
+  #***************************************************************/
+
+  what_t = .wt(uhatgive,t)
+
+  # now transform the X, Y, Z matrices using the weight matrix, what_t */
+
+
+    xstar = what_t%*%(diag(n) %x% x)
+    zstar = what_t%*%(diag(n) %x% z)
+
+  vecystr = what_t%*%as.matrix(c(y))
+  # Recompute Omega and Delta matrices */
+  rsd=uhatgive[-1,]
+  tmp1 = cbind(rsd,na.omit(diff(cbind(x,z))))
+  tmp2 = match.fun(ker_fun)(tmp1,v)$amat
+
+  del   = t(tmp1)%*%tmp1/nrow(tmp1) + tmp2
+  omega = del + t(tmp2)
+
+  # extract the required matrices ... */
+
+  omega1a=t(omega[-c((nrow(omega)-m-nz+1):nrow(omega)),,drop=F])
+  omega0ux=t(omega1a[-c(seq(n),(nrow(omega)-nz+1):nrow(omega)),,drop=F])
+
+  omega2a=t(omega[-c(seq(n),(nrow(omega)-nz+1):nrow(omega)),,drop=F])
+  omega0xx=t(omega2a[-c(seq(n),(nrow(omega2a)-nz+1):nrow(omega2a)),,drop=F])
+
+
+  # Compute the delta matrix */
+  # Note: "weights[iu]" are the kernel weights. They are re-computed in */
+  # KERNEL.SRC every time match.fun(ker_fun) is called. */
+
+  del1=t(del[-c(seq(n),(nrow(del)-nz+1):nrow(del)),,drop=F])
+  deluxz   = t(del1[-seq(n+m),,drop=F])
+
+  tmp1 = cbind(uhatgive[-1,],na.omit(diff(cbind(z))))
+  tmp2 = match.fun(ker_fun)(tmp1,v)$amat
+
+  del   = t(tmp1)%*%tmp1/nrow(tmp1) + tmp2
+  del2a=t(head(del, nrow(del)-nz))
+  del0z    = t(del2a[-seq(n),])
+
+  tmp = match.fun(ker_fun)(uhatgive,v)$amat
+  nobs = nrow(z)
+
+  for (s in c(0:(n-1))) { #s=0
+    tmp = diff(zstar[(1+(s*nobs)):((s+1)*nobs),])
+    if (s == 0) {
+      tmp1 = rbind(rep(0,ncol(tmp)),tmp)
+      # zeros compensate for the differencing */
+    } else {
+      tmp1 = rbind(tmp1,rep(0,ncol(tmp)),tmp)
+    }
+
+  }
+
+  # calculate delta_u0-zdot star  */
+  # uhatgive = naivegive residual */
+  tmp  = t(tmp1)%*% (what_t %*% as.matrix(c((uhatgivn))))/nobs
+
+  tmp2 = what_t %*% as.matrix(c(uhatgivn))
+  tmp2 = t(matrix(tmp2,n,ncol(t(uhatgivn)),byrow = TRUE))
+
+
+  weights=match.fun(ker_fun)(uhatgive,v)$weights
+
+  for (iu in seq(v)) {#iu=0
+    tmp2 = rbind(tmp2[-1,,drop=F],rep(0,ncol(uhatgivn)))
+    tmp = tmp + weights[iu]* t(tmp1)%*% as.matrix(c(tmp2))/nobs
+  }
+
+  # calculate the corrected GIVE residual */
+
+  tmp1 = rbind(matrix(rep(0,ncol(x)),1,ncol(x)),na.omit(diff(x)))
+
+  uhatgivs= as.matrix(uhatgive-(tmp1%*%solve(omega0xx)%*%t(omega0ux)))
+
+  colnames(uhatgivs)=paste0("u_",colnames(y))
+
+  # long-run covariance matrix */
+
+  tmp1 = match.fun(ker_fun)(uhatgivs,v)$amat
+
+  lromega = (t(uhatgivs)%*%uhatgivs)/nrow(uhatgivs) + tmp1 + t(tmp1)
+
+  # Now compute the variance-covariance matrix...  */
+
+  pz = zstar%*%solve(t(zstar)%*%zstar)%*%t(zstar)
+  pp = solve(t(xstar)%*% pz %*% xstar)%*%t(xstar)%*%pz
+
+  vcov = pp %*% (lromega %x% diag(nrow(uhatgivs))) %*%t(pp)
+
+  # Fully modified score matrix */
+
+  t2 = t(uhatgivs)%*%z
+  del0zpls = del0z - (omega0ux)%*%solve(omega0xx)%*%deluxz
+  t2 = t2 - nobs*del0zpls
+  s1 = (nobs^2) * t(tmp)%*%solve(t(zstar)%*%zstar)%*%tmp
+
+
+  s2 = t(as.matrix(c(t(t2)))) %*% solve(lromega %x% (t(z)%*%z))%*%as.matrix(c(t(t2)))
+
+  st  = s1 + s2
+
+  if (n*(nz-m) > 0 ) {pvalue = dchisq(st, n*(nz-m))*2 } else {pvalue = 0 }
+
+stderr=matrix(sqrt(diag(vcov)),nrow(agive), ncol(agive))
+tstats=agive/stderr
+agive=t(agive)
+stderr=t(stderr)
+tstats=t(tstats)
+rownames(stderr)=rownames(agive)=rownames(tstats)=colnames(x)
+colnames(stderr)=colnames(agive)=colnames(tstats)=colnames(y)
+colnames(vcov)=rownames(vcov)=c(t(outer(colnames(tstats),rownames(tstats),FUN = paste,sep="_")))
+
+
+fitted=x%*%agive
+colnames(fitted)=colnames(y)
+
+if(is.ts(y0)) {fitted=ts(fitted,end=end(y0),frequency=frequency(y0))
+
+} else {rownames(fitted)=rownames(y)}
+
+return(list(beta=agive,
+            stderr=stderr,
+            tstats=tstats,
+            vcov=vcov,
+            lromega=lromega,
+            s1=as.numeric(s1),
+            s2=as.numeric(s2),
+            pvalue=as.numeric(pvalue),
+            fit=fitted,
+            resid=uhatgivs))
+}
+
+
+
+.wt <- function(u,t) {
+  u=as.matrix(u)
+  nobs = nrow(u)
+  tmp = embed(u,t+1)[,-seq(ncol(u))]
+  tmp  = rbind(matrix(rep(0,t*ncol(tmp)),t,ncol(tmp)),tmp)
+
+  all_c = solve(t(tmp)%*%tmp)%*%(t(tmp)%*%u)
+  res_e = u-(tmp%*%all_c)
+  all_c = t(all_c)
+  s_e   = chol(solve((t(res_e)%*% res_e)/nrow(res_e)))
+
+  for (r in c(0,seq(t))) { #r=0
+
+    z = matrix(rep(0,nobs*nobs),nobs,nobs)
+
+    for (iz in c(0,seq(nobs-r-1))){
+      z[iz+1,iz+1+r] = 1L
+    }
+
+    # instead of setting t initial values to zero, as in the KP paper, the value
+    # at time = 1 is used */
+
+    z[1,1:(r+1)] = rep(1,r+1)
+    z = t(z)
+    if (r == 0) {
+      w = s_e %x% z
+
+    } else {
+      tw = s_e %*% all_c[1:ncol(u),(1+((r-1)*ncol(u))):(r*ncol(u))]
+      w = w - (tw %x% z)
+    }
+  }
+  return(w)
+}
+
+
 
 
 
@@ -906,7 +1202,7 @@ fmvar_forecast<-function(output,
     newdata=rbind(newdata,ypred)
     if (output$type %in% c("season","all")) {
 
-      newdata=ts(newdata,start=start(as.ts(output$data)),
+      newdata=ts(newdata,end=end(as.ts(output$data)),
                  frequency=frequency(as.ts(output$data)))
       newdata=timeSeries::as.timeSeries(newdata) }
 

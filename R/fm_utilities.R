@@ -85,7 +85,7 @@
       v = 1.7462*((a2*nobs)^0.2)-1}
 
   }
-  return(match.fun(ker_fun)(data=e,v))
+  return(match.fun(ker_fun)(data=e,v)$amat)
 }
 
 .detrend <- function (data,p){
