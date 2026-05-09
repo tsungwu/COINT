@@ -274,7 +274,7 @@ pp <- function(y,
     cvZt = cv_Zt[3,,drop=FALSE]
     cvZa = cv_Za[3,,drop=FALSE]
   } else if (100< t & t <= 250) {
-    cvZt = cv_Zt[4,]
+    cvZt = cv_Zt[4,,drop=FALSE]
     cvZa = cv_Za[4,,drop=FALSE]
   } else if (250< t & t <= 500) {
     cvZt = cv_Zt[5,,drop=FALSE]
