@@ -424,6 +424,7 @@ fmols <-function(y,
   type=match.arg(type)
   y=as.matrix(y)
   x=as.matrix(x)
+  
   m     = ncol(x)
   n     = ncol(y)
 
@@ -449,9 +450,13 @@ fmols <-function(y,
   e=as.matrix(e)
 
   del=.Delta(e, v, ker_fun, aband,filter) #long-run covariance matrix
-  del=t(t(del)[-seq(n),])
-  del=del[-c((nrow(del)-m+1):nrow(del)),,drop=F]
+  del=t(t(del)[-seq(n),])  
+  if(m==1) {
+    del=del[1,m+n,drop=F]
+  } else {
 
+  del=del[-c((nrow(del)-m+1):nrow(del)),,drop=F]
+}
   sig = .lrvar(e, v, ker_fun, aband,filter)
   sig=t(sig[-seq(n),,drop=F])
   sigxx = sig[-seq(n),,drop=F]
@@ -459,7 +464,7 @@ fmols <-function(y,
 
   delxx=.Delta(xd, v, ker_fun, aband,filter)
 
-  true  = del%*%solve(sigxx)
+  true  = del %*% solve(sigxx)
 
   ys    = as.matrix(y[-1,,drop=F] - xd%*%t(true))
   dels  = as.matrix(t(del)-delxx%*%t(true))
